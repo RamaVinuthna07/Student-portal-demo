@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ticket Booking UI</title>
+  <style>
+    /* ---------- Base / reset ---------- */
+    * {box-sizing: border-box;}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,#f7fbff,#ffffff);
+      color:#0f1724;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+    }
+
+    /* ---------- Layout ---------- */
+    .app{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+    .app__header{display:flex;align-items:center;justify-content:space-between;padding:12px 8px}
+    .brand{font-size:1.5rem;margin:0}
+    .tag{margin:0;color:#6b7280}
+
+    /* ---------- Cards & grid ---------- */
+    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(16,24,40,0.06);border:1px solid rgba(15,23,36,0.04)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px}
+    .card__title{margin:0 0 8px 0;font-size:1.05rem}
+    .card--form .field{display:block;margin-bottom:10px}
+
+    /* small screens */
+    @media (max-width:880px){
+      .row{grid-template-columns:1fr}
+    }
+
+    /* form fields */
+    .field{display:block}
+    .field__label{display:block;font-size:.8rem;color:#374151;margin-bottom:6px}
+    input[type="text"], input[type="email"], input[type="tel"], select, input[type="date"], input[type="time"]{
+      width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef8;background:#fbfdff;font-size:0.95rem;
+    }
+    .inline{display:flex;gap:12px}
+    .inline .field{flex:1}
+
+    /* ---------- Seat map ---------- */
+    .seatmap{margin-top:8px}
+    .seatmap__row{display:grid;grid-template-columns:48px repeat(4,1fr);gap:10px;align-items:center;padding:6px 0}
+    .seatmap__row--labels{font-weight:600;color:#6b7280}
+    .seatmap__row-label{font-weight:700;color:#374151}
+    .seat{display:inline-flex;align-items:center;justify-content:center;height:44px;border-radius:8px;border:1px solid #dbeafe;background:#f8fbff;cursor:pointer;position:relative}
+    .seat input{position:absolute;opacity:0;inset:0;cursor:pointer;margin:0}
+    .seat span{pointer-events:none;font-size:.85rem}
+    .seat--occupied{opacity:0.55;background:#f3f4f6;cursor:not-allowed}
+    .seat input:checked + span,
+    .seat:hover span{font-weight:700;color:#052c65}
+
+    /* Selected style using sibling selector */
+    .seat input:checked + span{
+      background: linear-gradient(180deg,#eef2ff,#dbeafe);
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:6px;
+      box-shadow:0 2px 8px rgba(99,102,241,0.15);
+      color:#0f1724;
+    }
+
+    /* legend */
+    .seatmap__legend{display:flex;gap:12px;margin-top:12px;align-items:center;color:#475569;font-size:.9rem}
+    .legend{display:inline-block;width:18px;height:12px;border-radius:3px;margin-right:8px;vertical-align:middle}
+    .legend--seat{background:#f8fbff;border:1px solid #dbeafe}
+    .legend--selected{background:linear-gradient(180deg,#eef2ff,#dbeafe)}
+    .legend--occupied{background:#f3f4f6}
+
+    /* summary & actions */
+    .card--summary{min-height:160px}
+    .summary{display:flex;flex-direction:column;gap:8px}
+    .summary__line{display:flex;justify-content:space-between;align-items:center}
+    .summary__price{margin-top:6px;padding-top:6px;border-top:1px dashed #eef2ff}
+    .muted{color:#6b7280;font-size:.95rem}
+
+    /* buttons */
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,36,0.06);background:#fff;cursor:pointer;margin-top:8px}
+    .btn--primary{background:linear-gradient(90deg,#2563eb,#7c3aed);color:#fff;border:none;box-shadow:0 8px 24px rgba(37,99,235,0.12)}
+
+    /* footer */
+    .app__foot{text-align:center;color:#9ca3af;padding:12px 0}
+
+    /* small helper for form layout */
+    form { display: grid; gap: 16px; }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="app__header">
+      <div>
+        <h1 class="brand">QuickTickets</h1>
+        <p class="tag">Fast & friendly ticket booking</p>
+      </div>
+    </header>
+
+    <section class="booking">
+      <form class="booking__form" autocomplete="off" novalidate>
+        <div class="row">
+          <div class="card card--form">
+            <h2 class="card__title">Trip details</h2>
+
+            <label class="field">
+              <span class="field__label">From</span>
+              <select required>
+                <option>New Delhi</option>
+                <option>Mumbai</option>
+                <option>Bengaluru</option>
+                <option>Kolkata</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field__label">To</span>
+              <select required>
+                <option>Mumbai</option>
+                <option>New Delhi</option>
+                <option>Hyderabad</option>
+                <option>Chennai</option>
+              </select>
+            </label>
+
+            <div class="inline">
+              <label class="field">
+                <span class="field__label">Date</span>
+                <input type="date" required />
+              </label>
+
+              <label class="field">
+                <span class="field__label">Time</span>
+                <input type="time" required />
+              </label>
+            </div>
+          </div>
+
+          <div class="card card--form">
+            <h2 class="card__title">Passenger</h2>
+
+            <label class="field">
+              <span class="field__label">Name</span>
+              <input type="text" placeholder="Full name" required />
+            </label>
+
+            <label class="field">
+              <span class="field__label">Email</span>
+              <input type="email" placeholder="you@example.com" required />
+            </label>
+
+            <label class="field">
+              <span class="field__label">Phone</span>
+              <input type="tel" placeholder="+91 98765 43210" required />
+            </label>
+
+            <label class="field">
+              <span class="field__label">Passengers</span>
+              <select required>
+                <option>1</option><option>2</option><option>3</option><option>4</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title">Choose seats</h2>
+          <p class="muted">Click seats to select — pure HTML/CSS (checkboxes)</p>
+
+          <div class="seatmap" aria-label="Seat map">
+            <div class="seatmap__row seatmap__row--labels">
+              <div></div><div>A</div><div>B</div><div>C</div><div>D</div>
+            </div>
+
+            <div class="seatmap__row">
+              <div class="seatmap__row-label">1</div>
+
+              <label class="seat">
+                <input type="checkbox" name="seat" value="1A" />
+                <span>1A</span>
+              </label>
+
+              <label class="seat seat--occupied">
+                <input type="checkbox" disabled />
+                <span>1B</span>
+              </label>
+
+              <label class="seat">
+                <input type="checkbox" name="seat" value="1C" />
+                <span>1C</span>
+              </label>
+
+              <label class="seat">
+                <input type="checkbox" name="seat" value="1D" />
+                <span>1D</span>
+              </label>
+            </div>
+
+            <div class="seatmap__row">
+              <div class="seatmap__row-label">2</div>
+              <label class="seat">
+                <input type="checkbox" name="seat" value="2A" />
+                <span>2A</span>
+              </label>
+              <label class="seat">
+                <input type="checkbox" name="seat" value="2B" />
+                <span>2B</span>
+              </label>
+              <label class="seat">
+                <input type="checkbox" name="seat" value="2C" />
+                <span>2C</span>
+              </label>
+              <label class="seat">
+                <input type="checkbox" name="seat" value="2D" />
+                <span>2D</span>
+              </label>
+            </div>
+
+            <div class="seatmap__row">
+              <div class="seatmap__row-label">3</div>
+              <label class="seat"><input type="checkbox" name="seat" value="3A" /><span>3A</span></label>
+              <label class="seat"><input type="checkbox" name="seat" value="3B" /><span>3B</span></label>
+              <label class="seat"><input type="checkbox" name="seat" value="3C" /><span>3C</span></label>
+              <label class="seat"><input type="checkbox" name="seat" value="3D" /><span>3D</span></label>
+            </div>
+
+            <div class="seatmap__row">
+              <div class="seatmap__row-label">4</div>
+              <label class="seat"><input type="checkbox" name="seat" value="4A" /><span>4A</span></label>
+              <label class="seat"><input type="checkbox" name="seat" value="4B" /><span>4B</span></label>
+              <label class="seat"><input type="checkbox" name="seat" value="4C" /><span>4C</span></label>
+              <label class="seat seat--occupied"><input type="checkbox" disabled /><span>4D</span></label>
+            </div>
+
+            <div class="seatmap__row">
+              <div class="seatmap__row-label">5</div>
+              <label class="seat"><input type="checkbox" name="seat" value="5A" /><span>5A</span></label>
+              <label class="seat"><input type="checkbox" name="seat" value="5B" /><span>5B</span></label>
+              <label class="seat"><input type="checkbox" name="seat" value="5C" /><span>5C</span></label>
+              <label class="seat"><input type="checkbox" name="seat" value="5D" /><span>5D</span></label>
+            </div>
+
+            <div class="seatmap__legend">
+              <div><span class="legend legend--seat"></span> Available</div>
+              <div><span class="legend legend--selected"></span> Selected</div>
+              <div><span class="legend legend--occupied"></span> Occupied</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="card card--summary">
+            <h2 class="card__title">Booking summary</h2>
+            <div class="summary">
+              <div class="summary__line"><span>Route:</span><span class="muted">New Delhi → Mumbai</span></div>
+              <div class="summary__line"><span>Date & Time:</span><span class="muted">—</span></div>
+              <div class="summary__line"><span>Seats:</span><span class="muted" id="selectedSeats">—</span></div>
+              <div class="summary__line"><span>Passengers:</span><span class="muted">1</span></div>
+              <div class="summary__line summary__price"><span>Total:</span><strong id="totalPrice">₹ 0</strong></div>
+            </div>
+          </div>
+
+          <div class="card card--actions">
+            <h2 class="card__title">Complete booking</h2>
+            <p class="muted">This demo uses only HTML & CSS — in a real app you'd wire up JS to handle submission and seat allocation.</p>
+            <button class="btn btn--primary" type="submit">Proceed to Payment</button>
+            <button class="btn" type="reset">Reset</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <footer class="app__foot">
+      <small>© QuickTickets • Demo UI</small>
+    </footer>
+  </main>
+</body>
+</html>
